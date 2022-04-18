@@ -131,8 +131,6 @@ def logout():
     time.sleep(5)
 
 
-start_time = time.time()
-
 while True:
     login(USERNAME, PASSWORD)
     time.sleep(5)
