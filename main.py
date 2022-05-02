@@ -4,13 +4,13 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-os.environ
+from selenium.common.exceptions import NoSuchElementException
 
 import time
 import random
 
-# List of potential tweets
 
+# Example List of potential tweets
 TWEETS = ["I am a bot driven by purpose! Please donate to my #Movember efforts and help me change the face of men’s "
           "health. https://movember.com/m/14759858?mc=1 ",
           "Prostate cancer is the second most common cancer in men worldwide. Please donate to my "
@@ -26,14 +26,18 @@ TWEETS = ["I am a bot driven by purpose! Please donate to my #Movember efforts a
           "Mental health matters. #Movember is working to help men stay mentally healthy, but they can’t do it alone. "
           "Please donate to my Movember efforts and support men's health. https://movember.com/m/14759858?mc=1"]
 
+
+# Username and Password constant variables - saved in env.
 USERNAME = os.environ['USERNAME']
 PASSWORD = os.environ['PASSWORD']
 
-
+# Locates and uses chrome driver
 service = Service("/Users/LewisHudson/Desktop/Development/chromedriver")
 driver = webdriver.Chrome(service=service)
 
 
+# Opens twitter with Selenium, finds elements for logging in using username and password, clicks enter.
+# Uses sleep to allow browser to load.
 def login(username, password):
     driver.get("https://twitter.com/i/flow/login")
     time.sleep(5)
@@ -46,8 +50,9 @@ def login(username, password):
     password_entry.send_keys(Keys.ENTER)
 
 
+# Finds top 3 trending hashtags, saves them to variables, formats them removing spaces and hashtags, opens new tweet
+# box, selects random tweet from TWEETS and adds on the trending hashtags at the end. Posts tweet.
 def random_tweet():
-    # Find top 3 trending hashtags
     time.sleep(5)
     driver.get("https://twitter.com/explore")
     time.sleep(5)
@@ -96,12 +101,15 @@ def random_tweet():
     time.sleep(5)
 
 
+# Opens txt file of mens health stats, picks on at random using random module, tweets it with a random number so not to
+# accidentally print same tweet as previosu and be flagged by Twitter.
 def tweet_stat():
     file = open("stats.txt")
     contents = file.read()
     stats = contents.splitlines()
     n = len(stats)
     random_no = random.randrange(0, n - 1)
+    random_hash = random.randrange(0, 99)
     driver.get("https://twitter.com/compose/tweet")
     time.sleep(5)
     new_tweet = driver.find_element(By.XPATH,
@@ -109,7 +117,7 @@ def tweet_stat():
                                     '2]/div/div/div/div[3]/div/div[1]/div/div/div/div/div[2]/div['
                                     '1]/div/div/div/div/div/div/div/div/div/label/div[1]/div/div/div/div/div['
                                     '2]/div/div/div/div/span/br')
-    new_tweet.send_keys(f"{stats[random_no]} #Movember")
+    new_tweet.send_keys(f"{stats[random_no]} #Movember  #{random_hash}")
     time.sleep(5)
     # Using JS to click here as above method didn't work???
     driver.execute_script("arguments[0].click();", driver.find_element(By.XPATH,
@@ -122,6 +130,7 @@ def tweet_stat():
     time.sleep(5)
 
 
+# Logs out
 def logout():
     driver.get("https://twitter.com/logout")
     time.sleep(5)
@@ -131,6 +140,7 @@ def logout():
     time.sleep(5)
 
 
+# While loop that calls the functions to Tweet every 30 mins.
 while True:
     login(USERNAME, PASSWORD)
     time.sleep(5)
